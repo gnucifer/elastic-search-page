@@ -1,31 +1,28 @@
-use Modern::Perl;
-
 package ElasticSearchPage::FacetsProcessor; #Processor instead of Controller probably
-use parent 'ElasticSearchPage::Processor';
 
-#require Exporter;
-#our @ISA = qw(Exporter);
-#our @EXPORT = qw();
+use Moo;
+extends 'ElasticSearchPage::Processor';
+use strictures 2;
+use namespace::clean;
 
-sub new  {
-    my ($class, $params) = @_;
-    my $self = {};
-    bless $self, $class;
-    $self->_initialize($params);
-    return $self;
-}
+use Modern::Perl;
+use Specio::Declare;
+use Specio::Library::Builtins;
 
-sub _initialize {
-    my ($self, $params) = @_;
-    $self->SUPER::_initialize($params);
-    die('Missing parameter: "facets"') unless exists $params->{facets};
-    # die('Missing parameter: "url_serializer"') unless exists $params->{url_serializer};
-    $self->{facets} = $params->{facets};
-    # $self->{url_serializer} = $params->{url_serializer};
-    # $params->{meta}; # Could contain "title" for example
-}
+use ElasticSearchPage::FacetsProcessor::Facet;
 
-sub default_namespace {
+# TODO: url_serializer delegator thing here also?
+
+object_isa_type('FacetObject', class => 'ElasticSearchPage::FacetsProcessor::Facet'); #???
+has facets => (
+    is => 'ro',
+    isa => t(
+        'ArrayRef',
+        of => t('FacetObject'),
+    ),
+);
+
+sub _default_namespace {
     return 'facets';
 }
 

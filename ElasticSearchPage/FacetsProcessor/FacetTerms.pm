@@ -1,17 +1,11 @@
-use Modern::Perl;
-
 package ElasticSearchPage::FacetsProcessor::FacetTerms;
-use parent 'ElasticSearchPage::FacetsProcessor::Facet';
 
-#sub _initialize {
-#    my ($self, $params) = @_;
-#}
+use Moo;
+extends 'ElasticSearchPage::FacetsProcessor::Facet';
+use strictures 2;
+use namespace::clean;
 
-# TODO: Find perl dsl thingy for validating parameters?
-#sub _validate_elastic_options {
-#    my ($class, $options) = @_;
-#    die('Missing elastic option: "field"') unless exists $options->{field};
-#}
+use Modern::Perl;
 
 sub bucket_condition {
     my ($self, $bucket) = @_; # TODO: Also pass complete response?

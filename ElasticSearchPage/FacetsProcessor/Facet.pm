@@ -1,55 +1,69 @@
-use Modern::Perl;
-
 package ElasticSearchPage::FacetsProcessor::Facet;
-use parent 'ElasticSearchPage::Base';
 
-#require Exporter;
-#our @ISA = qw(Exporter);
-#our @EXPORT = qw();
+use Moo;
+use strictures 2;
+use namespace::clean;
 
-sub new  {
-    my ($class, $params) = @_;
-    my $self = {};
-    bless $self, $class;
-    $self->_initialize($params);
-    return $self;
-}
+use Modern::Perl;
+use Specio::Library::Builtins;
 
-sub _initialize {
-    my ($self, $params) = @_;
-    # @TODO: Proper error handling, croak is probably enough
-    die('Missing parameter: "operator"') unless exists $params->{operator};
-    die('Missing parameter: "namespace"') unless exists $params->{namespace};
-    die('Missing parameter: "field"') unless exists $params->{field};
-    $self->{namespace} = $params->{namespace};
-    $self->{operator} = $params->{operator};
-    $self->{field} = $params->{field};
-    $self->{meta} = $params->{meta} if (exists $params->{meta});
-    $self->{label} = $params->{meta} if (exists $params->{label});
-    $self->{sort} //= [[count => 'asc']]; # count/(display_value/label?)/indexed_value
-    # elastic_aggregation_options? raw_options, raw?
-    $self->{elastic_options} //= {};
-    $self->_validate_elastic_options($params->{elastic_options});
-}
+# Role for this!?
 
-sub transferable_properies {
+my $str = t('Str');
+
+# TODO: Add required
+
+has namespace => (
+    is => 'ro',
+    isa => $str,
+    required => 1,
+);
+
+# TODO: Change to enum?
+has operator => (
+    is => 'ro',
+    isa => $str,
+    required => 1,
+);
+
+# Not all facets has field! Should be role instead!?
+has field => (
+    is => 'ro',
+    isa => $str,
+    required => 1,
+);
+
+has meta => (
+    is => 'ro',
+    isa => t('Item'),
+);
+
+has label => (
+    is => 'ro',
+    isa => $str,
+);
+
+# TODO: Custom type for this?
+# Use touple type?
+has sort => (
+    is => 'ro',
+    isa => t('ArrayRef', of => t('ArrayRef', of => $str)),
+    default => sub { [[count => 'asc']]; },
+);
+
+# TODO: Should be better way for validation?
+has elastic_options => (
+    is => 'ro',
+    isa => t('HashRef'),
+    trigger => sub {
+        my ($self, $options) = @_;
+        $self->_validate_elastic_options($options);
+    },
+);
+
+sub _transferable_properies {
     my ($self) = @_;
     return ('meta');
-}
-
-sub namespace {
-    my ($self) = @_;
-    return $self->{namespace};
-}
-
-sub field {
-    my ($self) = @_;
-    return $self->{field};
-}
-
-sub operator {
-    my ($self) = @_;
-    return $self->{operator};
 }
 
 sub bucket_label {
@@ -60,9 +74,11 @@ sub bucket_label {
 sub processed_facet_properties {
     my ($self) = @_;
     my $properties = {};
-    foreach my $property ($self->transferable_properies) {
-        if (exists $self->{$property}) {
-            $properties->{$property} = $self->{$property};
+    foreach my $property ($self->_transferable_properies) {
+        #if ($self->can($property) && $self->$property) {
+        # Hmmm??
+        if (defined $self->$property) { # Hmm?? Or use predicate?
+            $properties->{$property} = $self->$property;
         }
     }
     return $properties;

@@ -1,30 +1,37 @@
+package ElasticSearchPage::ProcessorsPipeline;
+
+use Moo;
+use strictures 2;
+use namespace::clean;
+
 use Modern::Perl;
 use URI;
 use URI::QueryParam;
+use Specio::Declare;
+use Specio::Library::Builtins;
+
+use ElasticSearchPage::Processor;
 
 # TODO: Rename to ElasticSearchPage:Dispatcher;
-# TODO: MOjligt att kan ha nago slags pattern dar ny dispatcher tar subdel av
+# TODO: Mojligt att kan ha nago slags pattern dar ny dispatcher tar subdel av
 # url och foljer samma pattern???
 
-package ElasticSearchPage::ProcessorsPipeline;
-use parent 'ElasticSearchPage::Base';
+object_isa_type('ProcessorObject', class => 'ElasticSearchPage::Processor'); #???
 
-#require Exporter;
-#our @ISA = qw(Exporter);
-#our @EXPORT = qw();
-
-# TODO: Has:
-# - processors
-# - search-callback-thingy implementing some interface
-
-# methodods, process($url) #(url can be relative or absolute?) protocol?}
-
-sub _initialize {
-    my ($self, $params) = @_;
-    $self->SUPER::_initialize($params);
-    die('Missing parameter: "processors"') unless exists $params->{processors};
-    $self->{processors} = $params->{processors};
-}
+has processors => (
+    is => 'ro',
+    isa => t(
+        'ArrayRef',
+        of => t('ProcessorObject'),
+    ),
+);
+# alternatively:
+#has processors => (
+#    is => 'ro',
+#    isa => t('ArrayRef')->parameterize(of => t('ProcessorObject')),
+#);
+#
+# TODO: Also has url serializer thing for delegation
 
 sub _parse_url {
     my ($self, $url_string) = @_;

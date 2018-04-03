@@ -1,11 +1,12 @@
-use Modern::Perl;
-
 package ElasticSearchPage::Processor;
-use parent 'ElasticSearchPage::Base';
 
-#require Exporter;
-#our @ISA = qw(Exporter);
-#our @EXPORT = qw();
+use Moo;
+use strictures 2;
+use namespace::clean;
+
+use Modern::Perl;
+use Specio::Declare;
+use Specio::Library::Builtins;
 
 # ** Abstract Class **
 # TODO: Probably add _initialize to all classes
@@ -17,21 +18,16 @@ use parent 'ElasticSearchPage::Base';
 #    #$params->{meta}; # Could contain "title" for example
 #    return bless $self, $class;
 #}
-sub _initialize {
-    my ($self, $params) = @_;
-    $self->{namespace} = exists $params->{namespace} ?
-        $params->{namespace} : $self->default_namespace;
-}
+
+has namespace => (
+    is => 'ro',
+    isa => t('Str'),
+    default => sub { $_::_default_namespace },
+);
 
 # TODO: Perl idiom for abstract methods?
-sub default_namespace {
+sub _default_namespace {
     die("Not implemented");
-}
-
-# TODO: Perl idiom for abstract methods?
-sub namespace {
-    my ($self) = @_;
-    return $self->{namespace};
 }
 
 sub elastic_request_body_alter {}
